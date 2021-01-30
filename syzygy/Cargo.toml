@@ -1,0 +1,9 @@
+[package]
+name = "syzygy-rs"
+version = "0.1.0"
+authors = ["Noah Kim <noahbkim@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+jsonapi = { path = "../jsonapi" }
+jsonapi_derive = { path = "../jsonapi_derive" }

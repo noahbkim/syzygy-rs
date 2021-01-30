@@ -1,0 +1,14 @@
+[package]
+name = "jsonapi_derive"
+version = "0.1.0"
+authors = ["Noah Kim <noahbkim@gmail.com>"]
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+jsonapi = { path = "../jsonapi" }
+proc-macro2 = "^1.0"
+syn = "^1.0"
+quote = "^1.0"
