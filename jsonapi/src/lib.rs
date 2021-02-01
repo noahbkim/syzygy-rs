@@ -6,11 +6,7 @@ extern crate serde_derive;
 
 pub mod types;
 pub mod resource;
-
-
-pub trait JsonApiResource: serde::Serialize where for<'de> Self: serde::Deserialize<'de> {
-
-}
+pub mod document;
 
 #[cfg(test)]
 mod tests {
