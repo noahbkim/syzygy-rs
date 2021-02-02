@@ -1,11 +1,11 @@
-use syzygy::api::{serializer, deserializer};
+use syzygy::endpoint::{serializer, deserializer, manager, Endpoint};
 use jsonapi::types::{JsonApiType, JsonApiValue};
 use jsonapi::resource::{Resource, Attributes};
 use std::collections::HashMap;
 use std::convert::TryInto;
-use std::ops::Try;
+use serde::__private::PhantomData;
 
-const USERS: JsonApiType = "users".to_string();
+const USERS: &str = "users";
 
 pub struct User {
     pub id: u64,
@@ -15,21 +15,21 @@ pub struct User {
     pub password: String,
 }
 
-pub struct UserSerializer {}
-
+pub struct UserSerializer;
 impl serializer::Serializer<User> for UserSerializer {
-    fn serialize(&self, user: User) -> Result<serializer::Output, serializer::Error> {
-        let mut resource = Resource::new(user.id.to_string(), USERS);
+    fn serialize(&self, user: &User) -> Result<serializer::Output, serializer::Error> {
+        let mut resource = Resource::new(user.id.to_string(), USERS.into());
         let mut attributes = Attributes::new();
-        attributes.insert("first_name".into(), JsonApiValue::String(user.first_name));
-        attributes.insert("last_name".into(), JsonApiValue::String(user.last_name));
-        attributes.insert("email".into(), JsonApiValue::String(user.email));
+        attributes.insert("first_name".into(), JsonApiValue::String(user.first_name.clone()));
+        attributes.insert("last_name".into(), JsonApiValue::String(user.last_name.clone()));
+        attributes.insert("email".into(), JsonApiValue::String(user.email.clone()));
         resource.attributes = Some(attributes);
         return Ok(serializer::Output::data(resource));
     }
 }
 
-impl deserializer::Deserializer<User> for UserSerializer {
+pub struct UserDeserializer;
+impl deserializer::Deserializer<User> for UserDeserializer {
     fn deserialize(&self, input: deserializer::Input) -> Result<User, deserializer::Error> {
         let attributes: Attributes = input.data.attributes.ok_or(deserializer::Error {})?;
         Ok(User {
@@ -61,19 +61,74 @@ impl deserializer::Deserializer<User> for UserSerializer {
     }
 }
 
-// #[async_trait]
-// impl tide::Endpoint<()> for Endpoint {
-//     async fn call(&self, mut request: tide::Request<()>) -> tide::Result<tide::Response> {
-//         match request.method() {
-//             Method::Options => {}
-//             Method::Get => {}
-//             Method::Post => {}
-//             Method::Put => {}
-//             Method::Patch => {}
-//             Method::Delete => {}
-//             _ => {}
-//         }
-//         let document: Document = request.body_json().await?;
-//         return Ok(tide::Response::builder(200).build());
-//     }
-// }
+pub struct UserQueryset {
+    data: Vec<User>,
+}
+
+impl manager::Queryset<User> for UserQueryset {
+    fn first(&self) -> Option<&User> {
+        self.data.first()
+    }
+
+    fn all(&self) -> &Vec<User> {
+        &self.data
+    }
+
+    fn filter(self, key: &str, value: &str) -> Self {
+        self
+    }
+
+    fn order(self, key: &str, value: &str) -> Self {
+        self
+    }
+}
+
+pub struct UserManager;
+
+impl manager::Manager<User> for UserManager {
+    type Queryset = UserQueryset;
+
+    fn query(&self) -> UserQueryset {
+        UserQueryset {
+            data: vec![User {
+                id: 1,
+                first_name: "Noah".to_string(),
+                last_name: "Kim".to_string(),
+                email: "noahbkim@gmail.com".to_string(),
+                password: "asdfjkl;".to_string()
+            }]
+        }
+    }
+
+    fn create(&self, resource: Resource) -> User {
+        User {
+            id: 1,
+            first_name: "Noah".to_string(),
+            last_name: "Kim".to_string(),
+            email: "noahbkim@gmail.com".to_string(),
+            password: "asdfjkl;".to_string()
+        }
+    }
+
+    fn update(&self, resource: Resource) -> User {
+        User {
+            id: 1,
+            first_name: "Noah".to_string(),
+            last_name: "Kim".to_string(),
+            email: "noahbkim@gmail.com".to_string(),
+            password: "asdfjkl;".to_string()
+        }
+    }
+
+    fn delete(&self, resource: Resource) -> User {
+        User {
+            id: 1,
+            first_name: "Noah".to_string(),
+            last_name: "Kim".to_string(),
+            email: "noahbkim@gmail.com".to_string(),
+            password: "asdfjkl;".to_string()
+        }
+    }
+}
+
+pub type UserEndpoint = Endpoint<User, UserSerializer, UserDeserializer, UserManager>;

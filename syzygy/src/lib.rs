@@ -3,7 +3,7 @@ extern crate tide;
 extern crate route_recognizer;
 extern crate async_trait;
 
-pub mod api;
+pub mod endpoint;
 
 #[cfg(test)]
 mod tests {

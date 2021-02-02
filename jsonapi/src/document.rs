@@ -1,13 +1,5 @@
 use crate::resource::{Links, Meta, Resource};
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-#[serde(untagged)]
-pub enum ResourceData {
-    None,
-    Single(Resource),
-    Multiple(Vec<Resource>),
-}
-
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 pub struct ErrorSource {
     pub pointer: Option<String>,
@@ -34,6 +26,14 @@ pub struct Error {
     pub meta: Option<Meta>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(untagged)]
+pub enum ResourceData {
+    None,
+    One(Resource),
+    Many(Vec<Resource>),
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Pagination {
     pub first: Option<String>,
@@ -49,7 +49,7 @@ pub struct Info {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
-pub struct DocumentError {
+pub struct ErrorDocument {
     pub errors: Vec<Error>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<Links>,
@@ -60,7 +60,7 @@ pub struct DocumentError {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
-pub struct DocumentData {
+pub struct DataDocument {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub data: Option<ResourceData>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -76,6 +76,12 @@ pub struct DocumentData {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(untagged)]
 pub enum Document {
-    Error(DocumentError),
-    Data(DocumentData),
+    Error(ErrorDocument),
+    Data(DataDocument),
+}
+
+impl Document {
+    pub fn new() -> Self {
+        Document::Data(Default::default())
+    }
 }

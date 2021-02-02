@@ -20,5 +20,5 @@ pub struct Error {
 }
 
 pub trait Serializer<T> {
-    fn serialize(&self, object: T) -> Result<Output, Error>;
+    fn serialize(&self, object: &T) -> Result<Output, Error>;
 }
