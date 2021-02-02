@@ -17,9 +17,9 @@ use crate::endpoint::manager::Queryset;
 pub struct Endpoint<T, S, D, M>
 where
     T: Send + Sync + 'static,
-    S: serializer::Serializer<T> + Send + Sync + 'static,
-    D: deserializer::Deserializer<T> + Send + Sync + 'static,
-    M: manager::Manager<T> + Send + Sync + 'static,
+    S: serializer::Serializer<T>,
+    D: deserializer::Deserializer<T>,
+    M: manager::Manager<T>,
 {
     pub serializer: S,
     pub deserializer: D,
@@ -30,9 +30,9 @@ where
 impl<T, S, D, M> Endpoint<T, S, D, M>
 where
     T: Send + Sync + 'static,
-    S: serializer::Serializer<T> + Send + Sync + 'static,
-    D: deserializer::Deserializer<T> + Send + Sync + 'static,
-    M: manager::Manager<T> + Send + Sync + 'static,
+    S: serializer::Serializer<T>,
+    D: deserializer::Deserializer<T>,
+    M: manager::Manager<T>,
 {
     pub fn new(serializer: S, deserializer: D, manager: M) -> Self {
         Self {
@@ -42,15 +42,24 @@ where
             t: PhantomData::default(),
         }
     }
+
+    pub fn default() -> Self {
+        Self {
+            serializer: S::default(),
+            deserializer: D::default(),
+            manager: M::default(),
+            t: PhantomData::default(),
+        }
+    }
 }
 
 #[async_trait]
 impl<T, S, D, M> tide::Endpoint<()> for Endpoint<T, S, D, M>
 where
     T: Send + Sync + 'static,
-    S: serializer::Serializer<T> + Send + Sync,
-    D: deserializer::Deserializer<T> + Send + Sync,
-    M: manager::Manager<T> + Send + Sync
+    S: serializer::Serializer<T>,
+    D: deserializer::Deserializer<T>,
+    M: manager::Manager<T>,
 {
     async fn call(&self, mut request: tide::Request<()>) -> tide::Result<tide::Response> {
         match request.method() {
@@ -81,6 +90,5 @@ where
             // Method::Delete => {}
             _ => Ok(tide::Response::builder(404).build())
         }
-
     }
 }

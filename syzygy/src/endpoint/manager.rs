@@ -7,7 +7,7 @@ pub trait Queryset<T> {
     fn order(self, key: &str, value: &str) -> Self;
 }
 
-pub trait Manager<T> {
+pub trait Manager<T>: Send + Sync + Default + 'static {
     type Queryset: Queryset<T>;
     fn query(&self) -> Self::Queryset;
     fn create(&self, resource: Resource) -> T;

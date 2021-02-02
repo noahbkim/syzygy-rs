@@ -19,6 +19,6 @@ pub struct Error {
 
 }
 
-pub trait Serializer<T> {
+pub trait Serializer<T>: Send + Sync + Default + 'static {
     fn serialize(&self, object: &T) -> Result<Output, Error>;
 }

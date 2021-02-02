@@ -15,7 +15,9 @@ pub struct User {
     pub password: String,
 }
 
+#[derive(Default)]
 pub struct UserSerializer;
+
 impl serializer::Serializer<User> for UserSerializer {
     fn serialize(&self, user: &User) -> Result<serializer::Output, serializer::Error> {
         let mut resource = Resource::new(user.id.to_string(), USERS.into());
@@ -28,7 +30,9 @@ impl serializer::Serializer<User> for UserSerializer {
     }
 }
 
+#[derive(Default)]
 pub struct UserDeserializer;
+
 impl deserializer::Deserializer<User> for UserDeserializer {
     fn deserialize(&self, input: deserializer::Input) -> Result<User, deserializer::Error> {
         let attributes: Attributes = input.data.attributes.ok_or(deserializer::Error {})?;
@@ -83,6 +87,7 @@ impl manager::Queryset<User> for UserQueryset {
     }
 }
 
+#[derive(Default)]
 pub struct UserManager;
 
 impl manager::Manager<User> for UserManager {
