@@ -9,6 +9,8 @@ pub struct Error {
 
 }
 
-pub trait Deserializer<T>: Send + Sync + Default + 'static {
-    fn deserialize(&self, input: Input) -> Result<T, Error>;
+pub trait Deserializer: Send + Sync + Default + 'static {
+    type T;
+
+    fn deserialize(&self, input: Input) -> Result<Self::T, Error>;
 }

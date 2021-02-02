@@ -1,7 +1,5 @@
-use tide;
-use tide::{Request, StatusCode};
-use tide::prelude::*;
 use crate::user::UserEndpoint;
+use tide;
 
 mod user;
 

@@ -5,82 +5,95 @@ pub mod serializer;
 pub mod deserializer;
 pub mod paginator;
 pub mod authenticator;
+pub mod dispatcher;
+pub mod view;
 
 use tide::http::Method;
 use jsonapi::document::{Document, DataDocument, ResourceData};
 use jsonapi::resource::Resource;
 use async_trait::async_trait;
-use std::marker::PhantomData;
-use jsonapi::resource::ResourceIdentifierData::Many;
+use jsonapi::types::JsonApiId;
 use crate::endpoint::manager::Queryset;
 
-pub struct Endpoint<T, S, D, M>
+pub struct Endpoint<T, D, M, S>
 where
     T: Send + Sync + 'static,
-    S: serializer::Serializer<T>,
-    D: deserializer::Deserializer<T>,
-    M: manager::Manager<T>,
+    D: dispatcher::Dispatcher<Self>,
+    M: manager::Manager<T = T>,
+    S: serializer::Serializer<T = T>,
 {
-    pub serializer: S,
-    pub deserializer: D,
+    pub dispatcher: D,
     pub manager: M,
-    pub t: PhantomData<T>,
+    pub serializer: S,
 }
 
-impl<T, S, D, M> Endpoint<T, S, D, M>
+impl<T, D, M, S> Endpoint<T, D, M, S>
 where
     T: Send + Sync + 'static,
-    S: serializer::Serializer<T>,
-    D: deserializer::Deserializer<T>,
-    M: manager::Manager<T>,
+    D: dispatcher::Dispatcher<Self>,
+    M: manager::Manager<T = T>,
+    S: serializer::Serializer<T = T>,
 {
-    pub fn new(serializer: S, deserializer: D, manager: M) -> Self {
+    pub fn new(dispatcher: D, manager: M, serializer: S) -> Self {
         Self {
-            serializer,
-            deserializer,
+            dispatcher,
             manager,
-            t: PhantomData::default(),
+            serializer,
         }
     }
 
     pub fn default() -> Self {
         Self {
-            serializer: S::default(),
-            deserializer: D::default(),
+            dispatcher: D::default(),
             manager: M::default(),
-            t: PhantomData::default(),
+            serializer: S::default(),
         }
+    }
+
+    pub async fn retrieve(&self, request: tide::Request<()>, id: JsonApiId) -> tide::Result<tide::Response> {
+        Ok(tide::Response::builder(500).build())
     }
 }
 
 #[async_trait]
-impl<T, S, D, M> tide::Endpoint<()> for Endpoint<T, S, D, M>
+impl<T, D, M, S> view::View for Endpoint<T, D, M, S>
 where
     T: Send + Sync + 'static,
-    S: serializer::Serializer<T>,
-    D: deserializer::Deserializer<T>,
-    M: manager::Manager<T>,
+    D: dispatcher::Dispatcher<Self>,
+    M: manager::Manager<T = T>,
+    S: serializer::Serializer<T = T>,
+{
+    async fn list(&self, mut request: tide::Request<()>) -> tide::Result<tide::Response> {
+        let mut data: Vec<Resource> = Vec::new();
+        let mut included: Vec<Resource> = Vec::new();
+        for object in self.manager.query().all() {
+            let result = match self.serializer.serialize(object) {
+                Ok(output) => output,
+                Err(e) => return Ok(tide::Response::builder(500).build()),
+            };
+            data.push(result.data);
+            result.included.map(|i| included.extend(i.into_iter()));
+        }
+        let mut document: DataDocument = Default::default();
+        document.data = Some(ResourceData::Many(data));
+        document.included = Some(included);
+        Ok(tide::Response::builder(200)
+            .body(serde_json::to_string(&document).unwrap())
+            .build())
+    }
+}
+
+#[async_trait]
+impl<T, D, M, S> tide::Endpoint<()> for Endpoint<T, D, M, S>
+where
+    T: Send + Sync + 'static,
+    D: dispatcher::Dispatcher<Self>,
+    M: manager::Manager<T = T>,
+    S: serializer::Serializer<T = T>,
 {
     async fn call(&self, mut request: tide::Request<()>) -> tide::Result<tide::Response> {
         match request.method() {
-            Method::Get => {
-                let mut data: Vec<Resource> = Vec::new();
-                let mut included: Vec<Resource> = Vec::new();
-                for object in self.manager.query().all() {
-                    let result = match self.serializer.serialize(object) {
-                        Ok(output) => output,
-                        Err(e) => return Ok(tide::Response::builder(500).build()),
-                    };
-                    data.push(result.data);
-                    result.included.map(|i| included.extend(i.into_iter()));
-                }
-                let mut document: DataDocument = Default::default();
-                document.data = Some(ResourceData::Many(data));
-                document.included = Some(included);
-                Ok(tide::Response::builder(200)
-                    .body(serde_json::to_string(&document).unwrap())
-                    .build())
-            }
+            Method::Get => self.dispatcher.list(request, self).await,
             Method::Post => {
                 let document: Document = request.body_json().await?;
                 return Ok(tide::Response::builder(200).build());
