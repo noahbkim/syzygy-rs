@@ -1,6 +1,7 @@
 use jsonapi::resource::{Attributes, Resource};
 use jsonapi::types::{JsonApiValue};
 use syzygy::endpoint::{deserializer, manager, serializer, Endpoint};
+use syzygy::endpoint::dispatcher::DefaultDispatcher;
 
 const USERS: &str = "users";
 
@@ -104,8 +105,7 @@ impl manager::Queryset for UserQueryset {
 #[derive(Default)]
 pub struct UserManager;
 
-impl manager::Manager for UserManager {
-    type T = User;
+impl manager::Manager<User> for UserManager {
     type Queryset = UserQueryset;
 
     fn query(&self) -> UserQueryset {
@@ -151,4 +151,4 @@ impl manager::Manager for UserManager {
     }
 }
 
-pub type UserEndpoint = Endpoint<User, UserSerializer, UserDeserializer, UserManager>;
+pub type UserEndpoint = Endpoint<User, DefaultDispatcher, UserManager, UserSerializer>;

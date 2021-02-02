@@ -9,12 +9,11 @@ pub trait Queryset {
     fn order(self, key: &str, value: &str) -> Self;
 }
 
-pub trait Manager: Send + Sync + Default + 'static {
-    type T;
-    type Queryset: Queryset<T = Self::T>;
+pub trait Manager<T>: Send + Sync + Default + 'static {
+    type Queryset: Queryset<T = T>;
 
     fn query(&self) -> Self::Queryset;
-    fn create(&self, resource: Resource) -> Self::T;
-    fn update(&self, resource: Resource) -> Self::T;
-    fn delete(&self, resource: Resource) -> Self::T;
+    fn create(&self, resource: Resource) -> T;
+    fn update(&self, resource: Resource) -> T;
+    fn delete(&self, resource: Resource) -> T;
 }

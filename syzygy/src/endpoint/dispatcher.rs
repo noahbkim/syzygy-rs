@@ -1,23 +1,34 @@
 use jsonapi::types::JsonApiId;
 use async_trait::async_trait;
 use crate::endpoint::view::View;
+use tide::http::Method;
 
-// #[async_trait]
-// pub trait Retrieve: Send + Sync + 'static {
-//     async fn retrieve(&self, mut request: tide::Request<()>, id: JsonApiId) -> tide::Result<tide::Response>;
-// }
-//
-// #[async_trait]
-// pub trait List: Send + Sync + 'static {
-//     async fn list(&self, mut request: tide::Request<()>) -> tide::Result<tide::Response>;
-// }
+pub trait Dispatcher: Send + Sync + Default + 'static {
+    fn list(&self) -> bool { true }
+    fn create(&self) -> bool { true }
+    fn retrieve(&self) -> bool { true }
+    fn update(&self) -> bool { true }
+    fn delete(&self) -> bool { true }
+}
 
-#[async_trait]
-pub trait Dispatcher<V>: Send + Sync + Default + 'static
-where
-    V: crate::endpoint::view::View
-{
-    async fn list(&self, mut request: tide::Request<()>, handler: &V) -> tide::Result<tide::Response> {
-        handler.list(request).await
-    }
+#[derive(Default)]
+pub struct DefaultDispatcher;
+
+impl Dispatcher for DefaultDispatcher {}
+
+#[derive(Default)]
+pub struct ConfigurableDispatcher {
+    list: bool,
+    retrieve: bool,
+    create: bool,
+    update: bool,
+    delete: bool,
+}
+
+impl Dispatcher for ConfigurableDispatcher {
+    fn list(&self) -> bool { self.list }
+    fn create(&self) -> bool { self.retrieve }
+    fn retrieve(&self) -> bool { self.create }
+    fn update(&self) -> bool { self.update }
+    fn delete(&self) -> bool { self.delete }
 }

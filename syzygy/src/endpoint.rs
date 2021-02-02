@@ -15,11 +15,12 @@ use async_trait::async_trait;
 use jsonapi::types::JsonApiId;
 use crate::endpoint::manager::Queryset;
 
+
 pub struct Endpoint<T, D, M, S>
 where
     T: Send + Sync + 'static,
-    D: dispatcher::Dispatcher<Self>,
-    M: manager::Manager<T = T>,
+    D: dispatcher::Dispatcher,
+    M: manager::Manager<T>,
     S: serializer::Serializer<T = T>,
 {
     pub dispatcher: D,
@@ -30,8 +31,7 @@ where
 impl<T, D, M, S> Endpoint<T, D, M, S>
 where
     T: Send + Sync + 'static,
-    D: dispatcher::Dispatcher<Self>,
-    M: manager::Manager<T = T>,
+    M: manager::Manager<T>,
     S: serializer::Serializer<T = T>,
 {
     pub fn new(dispatcher: D, manager: M, serializer: S) -> Self {
@@ -53,17 +53,8 @@ where
     pub async fn retrieve(&self, request: tide::Request<()>, id: JsonApiId) -> tide::Result<tide::Response> {
         Ok(tide::Response::builder(500).build())
     }
-}
 
-#[async_trait]
-impl<T, D, M, S> view::View for Endpoint<T, D, M, S>
-where
-    T: Send + Sync + 'static,
-    D: dispatcher::Dispatcher<Self>,
-    M: manager::Manager<T = T>,
-    S: serializer::Serializer<T = T>,
-{
-    async fn list(&self, mut request: tide::Request<()>) -> tide::Result<tide::Response> {
+    pub async fn list(&self, mut request: tide::Request<()>) -> tide::Result<tide::Response> {
         let mut data: Vec<Resource> = Vec::new();
         let mut included: Vec<Resource> = Vec::new();
         for object in self.manager.query().all() {
@@ -87,8 +78,7 @@ where
 impl<T, D, M, S> tide::Endpoint<()> for Endpoint<T, D, M, S>
 where
     T: Send + Sync + 'static,
-    D: dispatcher::Dispatcher<Self>,
-    M: manager::Manager<T = T>,
+    M: manager::Manager<T>,
     S: serializer::Serializer<T = T>,
 {
     async fn call(&self, mut request: tide::Request<()>) -> tide::Result<tide::Response> {
