@@ -1,9 +1,10 @@
 extern crate jsonapi;
-extern crate tide;
-extern crate route_recognizer;
+extern crate hyper;
 extern crate async_trait;
 
 pub mod endpoint;
+pub mod types;
+pub mod router;
 
 #[cfg(test)]
 mod tests {

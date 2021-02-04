@@ -8,9 +8,8 @@ edition = "2018"
 syzygy = { path = "../syzygy" }
 jsonapi = { path = "../jsonapi" }
 jsonapi_derive = { path = "../jsonapi_derive" }
-tide = "0.16.0"
+hyper = "0.14.2"
 async-std = { version = "1.8.0", features = ["attributes"] }
 serde = { version = "1.0", features = ["derive"] }
-route-recognizer = "0.2.0"
 serde_json = "1.0.61"
 async-trait = "0.1.42"
