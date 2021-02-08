@@ -1,14 +1,11 @@
 use std::collections::HashMap;
 
-use hyper;
+pub mod cursor;
+pub mod route;
+pub use cursor::Cursor;
 
-pub mod request;
-pub mod response;
-pub use request::Request;
-pub use response::Response;
-use crate::endpoint;
 use crate::endpoint::view::View;
-use hyper::{Method, Body};
+use crate::router::route::Route;
 
 pub struct Router {
     children: HashMap<String, Router>,
@@ -34,59 +31,38 @@ impl Router {
         self.children.insert(path, router);
     }
 
-    pub async fn route(&self, request: Request) -> Response {
+    pub fn get(&self, mut cursor: Cursor) -> Route {
         match &self.view {
-            Some(view) => self.route_view(view, request).await,
-            None => self.route_through(request).await,
-        }
-    }
-
-    async fn route_view(&self, view: &Box<dyn View>, mut request: Request) -> Response {
-        match request.path.pop() {
-            Some(id) => match request.path.pop() {
-                Some(next) => self.route_view_nested(id, next, request).await,
-                None => self.route_view_item(view, id, request).await,
+            Some(view) => match cursor.path.pop() {
+                Some(id) => match cursor.path.pop() {
+                    Some(next) => self.get_nested(id, next, cursor),
+                    None => Route::Item(&**view, id, cursor.parents),
+                },
+                None => Route::Collection(&**view, cursor.parents),
             },
-            None => self.route_view_collection(view, request).await,
+            None => self.get_through(cursor),
         }
     }
 
-    async fn route_view_collection(&self, view: &Box<dyn View>, request: Request) -> Response {
-        match request.request.method() {
-            &Method::GET => view.list(endpoint::Request::new(request)).await,
-            &Method::POST => view.create(endpoint::Request::new(request)).await,
-            _ => Response::new(Body::from("invalid method")),
+    fn get_nested(&self, id: String, next: String, mut cursor: Cursor) -> Route {
+        let router = match self.children.get(&next) {
+            Some(router) => router,
+            None => return Route::None,
+        };
+        match cursor.parents.as_mut() {
+            Some(parents) => parents.push(id),
+            None => cursor.parents = Some(vec![id]),
         }
+        router.get(cursor)
     }
 
-    async fn route_view_item(&self, view: &Box<dyn View>, id: String, request: Request) -> Response {
-        match request.request.method() {
-            &Method::GET => view.retrieve(endpoint::Request::new(request), id).await,
-            &Method::PUT | &Method::PATCH => view.update(endpoint::Request::new(request), id).await,
-            &Method::DELETE => view.delete(endpoint::Request::new(request), id).await,
-            _ => Response::new(Body::from("invalid method")),
-        }
-    }
-
-    async fn route_view_nested(&self, id: String, next: String, mut request: Request) -> Response {
-        match self.children.get(&next) {
-            Some(router) => {
-                if request.parents.is_none() {
-                    request.parents = Some(vec![id]);
-                }
-                router.route(request).await
-            },
-            None => Response::new(Body::from("no nested")),
-        }
-    }
-
-    async fn route_through(&self, mut request: Request) -> Response {
-        match request.path.pop() {
+    fn get_through(&self, mut cursor: Cursor) -> Route {
+        match cursor.path.pop() {
             Some(next) => match self.children.get(&next) {
-                Some(router) => router.route(request).await,
-                None => Response::new(Body::from("no child")),
+                Some(router) => router.get(cursor),
+                None => Route::None,
             },
-            None => Response::new(Body::from("no view"))
+            None => Route::None
         }
     }
 }

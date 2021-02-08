@@ -4,7 +4,10 @@ pub struct Path {
 
 impl Path {
     pub fn new(request: &hyper::Request<hyper::Body>) -> Self {
-        let mut parts: Vec<String> = request.uri().path().split("/").collect();
+        let mut parts: Vec<String> = Vec::new();
+        for part in request.uri().path().split("/") {
+            parts.push(part.to_string());
+        }
         parts.reverse();
         Self { parts }
     }
@@ -26,14 +29,13 @@ impl Path {
     }
 }
 
-pub struct Request {
-    pub request: hyper::Request<hyper::Body>,
+pub struct Cursor {
     pub parents: Option<Vec<String>>,
     pub path: Path,
 }
 
-impl Request {
-    pub fn new(request: hyper::Request<hyper::Body>) -> Request {
-        Request { request, parents: None, path: Path::new(&request) }
+impl Cursor {
+    pub fn new(request: hyper::Request<hyper::Body>) -> Cursor {
+        Cursor { parents: None, path: Path::new(&request) }
     }
 }

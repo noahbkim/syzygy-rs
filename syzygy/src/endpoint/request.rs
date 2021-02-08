@@ -4,7 +4,5 @@ pub struct Request {
 }
 
 impl Request {
-    pub fn new(request: crate::router::Request) -> Request {
-        Request { request: request.request, parents: request.parents }
-    }
+
 }

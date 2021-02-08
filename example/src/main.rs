@@ -2,6 +2,8 @@ use std::convert::Infallible;
 
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server};
+use std::sync::Arc;
+use syzygy::router::Router;
 
 async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     Ok(Response::new(Body::from("Hello World!")))
@@ -10,6 +12,7 @@ async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     pretty_env_logger::init();
+    let mut router: Arc<Router> = Arc::new(Router::empty());
 
     // For every connection, we must make a `Service` to handle all
     // incoming HTTP requests on said connection.
