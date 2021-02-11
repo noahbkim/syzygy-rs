@@ -13,7 +13,7 @@ pub struct Router {
 }
 
 impl Router {
-    pub fn view<V: View>(view: V) -> Self {
+    pub fn view<V: View + 'static>(view: V) -> Self {
         Self {
             children: HashMap::new(),
             view: Some(Box::new(view)),
@@ -32,15 +32,17 @@ impl Router {
     }
 
     pub fn get(&self, mut cursor: Cursor) -> Route {
-        match &self.view {
-            Some(view) => match cursor.path.pop() {
-                Some(id) => match cursor.path.pop() {
-                    Some(next) => self.get_nested(id, next, cursor),
-                    None => Route::Item(&**view, id, cursor.parents),
-                },
-                None => Route::Collection(&**view, cursor.parents),
-            },
-            None => self.get_through(cursor),
+        let view = match &self.view {
+            Some(view) => view,
+            None => return self.get_through(cursor),
+        };
+        let id = match cursor.path.pop() {
+            Some(id) => id,
+            None => return Route::Collection(&**view, cursor.parents),
+        };
+        match cursor.path.pop() {
+            Some(next) => self.get_nested(id, next, cursor),
+            None => Route::Item(&**view, id, cursor.parents),
         }
     }
 
@@ -57,12 +59,13 @@ impl Router {
     }
 
     fn get_through(&self, mut cursor: Cursor) -> Route {
-        match cursor.path.pop() {
-            Some(next) => match self.children.get(&next) {
-                Some(router) => router.get(cursor),
-                None => Route::None,
-            },
-            None => Route::None
+        let next = match cursor.path.pop() {
+            Some(next) => next,
+            None => return Route::None
+        };
+        match self.children.get(&next) {
+            Some(router) => router.get(cursor),
+            None => Route::None,
         }
     }
 }

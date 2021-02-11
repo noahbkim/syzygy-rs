@@ -35,7 +35,7 @@ pub struct Cursor {
 }
 
 impl Cursor {
-    pub fn new(request: hyper::Request<hyper::Body>) -> Cursor {
+    pub fn new(request: &hyper::Request<hyper::Body>) -> Cursor {
         Cursor { parents: None, path: Path::new(&request) }
     }
 }
