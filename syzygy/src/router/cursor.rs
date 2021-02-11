@@ -1,3 +1,5 @@
+use std::fmt;
+
 pub struct Path {
     parts: Vec<String>
 }
@@ -5,7 +7,8 @@ pub struct Path {
 impl Path {
     pub fn new(request: &hyper::Request<hyper::Body>) -> Self {
         let mut parts: Vec<String> = Vec::new();
-        for part in request.uri().path().split("/") {
+
+        for part in request.uri().path().trim_matches('/').split('/') {
             parts.push(part.to_string());
         }
         parts.reverse();

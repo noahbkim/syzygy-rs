@@ -28,8 +28,9 @@ impl Service<Request<Body>> for Handler {
     }
 
     fn call(&mut self, req: Request<Body>) -> Self::Future {
-        let route = self.router.get(Cursor::new(&req));
+        let router = self.router.clone();
         Box::pin(async move {
+            let route = router.get(Cursor::new(&req));
             Ok(match route {
                 Route::Item(view, id, parents) => {
                     match req.method() {
