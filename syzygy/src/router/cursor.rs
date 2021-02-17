@@ -1,7 +1,7 @@
 use std::fmt;
 
 pub struct Path {
-    parts: Vec<String>
+    parts: Vec<String>,
 }
 
 impl Path {
@@ -39,6 +39,9 @@ pub struct Cursor {
 
 impl Cursor {
     pub fn new(request: &hyper::Request<hyper::Body>) -> Cursor {
-        Cursor { parents: None, path: Path::new(&request) }
+        Cursor {
+            parents: None,
+            path: Path::new(&request),
+        }
     }
 }

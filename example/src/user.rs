@@ -1,6 +1,6 @@
 use jsonapi::resource::{Attributes, Resource};
 use jsonapi::types::{JsonApiValue};
-use syzygy::endpoint::{deserializer, manager, serializer, Endpoint};
+use syzygy::view::{deserializer, manager, serializer, Endpoint};
 
 const USERS: &str = "users";
 

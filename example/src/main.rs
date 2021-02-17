@@ -31,25 +31,7 @@ impl Service<Request<Body>> for Handler {
         let router = self.router.clone();
         Box::pin(async move {
             let route = router.get(Cursor::new(&req));
-            Ok(match route {
-                Route::Item(view, id, parents) => {
-                    match req.method() {
-                        &Method::GET => view.retrieve(req, id, parents).await,
-                        &Method::PATCH |
-                        &Method::PUT => view.update(req, id, parents).await,
-                        &Method::DELETE => view.delete(req, id, parents).await,
-                        _ => Response::new(Body::from("invalid method"))
-                    }
-                },
-                Route::Collection(view, parents) => {
-                    match req.method() {
-                        &Method::GET => view.list(req, parents).await,
-                        &Method::POST => view.create(req, parents).await,
-                        _ => Response::new(Body::from("invalid method"))
-                    }
-                },
-                Route::None => Response::new(Body::from("not found"))
-            })
+
         })
     }
 }

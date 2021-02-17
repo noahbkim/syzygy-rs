@@ -4,8 +4,8 @@ pub mod cursor;
 pub mod route;
 pub use cursor::Cursor;
 
-use crate::endpoint::view::View;
 use crate::router::route::Route;
+use crate::view::View;
 
 pub struct Router {
     children: HashMap<String, Router>,
@@ -23,7 +23,7 @@ impl Router {
     pub fn empty() -> Self {
         Self {
             children: HashMap::new(),
-            view: None
+            view: None,
         }
     }
 
@@ -61,7 +61,7 @@ impl Router {
     fn get_through(&self, mut cursor: Cursor) -> Route {
         let next = match cursor.path.pop() {
             Some(next) => next,
-            None => return Route::None
+            None => return Route::None,
         };
         match self.children.get(&next) {
             Some(router) => router.get(cursor),

@@ -11,8 +11,8 @@ pub trait Queryset {
 
 pub trait Manager<T>: Send + Sync + Default + 'static {
     type Queryset: Queryset<T = T>;
-
     fn query(&self) -> Self::Queryset;
+
     fn create(&self, resource: Resource) -> T;
     fn update(&self, resource: Resource) -> T;
     fn delete(&self, resource: Resource) -> T;
