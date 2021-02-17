@@ -1,5 +1,3 @@
-use std::fmt;
-
 pub struct Path {
     parts: Vec<String>,
 }

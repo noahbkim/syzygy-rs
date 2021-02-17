@@ -1,9 +1,7 @@
 use async_trait::async_trait;
 
 use crate::{Request, Response};
-use crate::view::dispatcher::Dispatcher;
 
-mod extra;
 mod method;
 mod component;
 
@@ -13,6 +11,7 @@ pub trait CollectionView {
     async fn options(&self, request: Request) -> Response;
 }
 
+#[async_trait]
 pub trait ItemView {
     async fn view(&self, request: Request, id: String, parents: Option<Vec<String>>) -> Response;
     async fn options(&self, request: Request) -> Response;

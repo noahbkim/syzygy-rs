@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+
 pub use create::Create;
 pub use delete::Delete;
 pub use list::List;
@@ -29,6 +31,7 @@ where
     delete: D,
 }
 
+#[async_trait]
 impl<C, L, R, U, D> CollectionView for ComponentView<C, L, R, U, D>
 where
     C: Create + Method + Send + Sync,
@@ -37,7 +40,7 @@ where
     U: Update + Method + Send + Sync,
     D: Delete + Method + Send + Sync,
 {
-    async fn view(&mut self, mut request: Request, parents: Option<Vec<String>>) -> Response {
+    async fn view(&self, request: Request, parents: Option<Vec<String>>) -> Response {
         match request.method() {
             &hyper::Method::GET => self.list.list(request, parents).await,
             &hyper::Method::POST => self.create.create(request, parents).await,
@@ -45,11 +48,12 @@ where
         }
     }
 
-    async fn options(&mut self, mut request: Request) -> Response {
+    async fn options(&self, request: Request) -> Response {
         unimplemented!()
     }
 }
 
+#[async_trait]
 impl<C, L, R, U, D> ItemView for ComponentView<C, L, R, U, D>
 where
     C: Create + Method + Send + Sync,
@@ -58,7 +62,7 @@ where
     U: Update + Method + Send + Sync,
     D: Delete + Method + Send + Sync,
 {
-    async fn view(&mut self, mut request: Request, id: String, parents: Option<Vec<String>>) -> Response {
+    async fn view(&self, request: Request, id: String, parents: Option<Vec<String>>) -> Response {
         match request.method() {
             &hyper::Method::GET => self.retrieve.retrieve(request, id, parents).await,
             &hyper::Method::PATCH |
@@ -68,7 +72,7 @@ where
         }
     }
 
-    async fn options(&mut self, mut request: Request) -> Response {
+    async fn options(&self, request: Request) -> Response {
         unimplemented!()
     }
 }

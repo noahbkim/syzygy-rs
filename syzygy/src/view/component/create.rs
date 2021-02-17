@@ -4,7 +4,7 @@ use hyper::{http, Body, StatusCode};
 
 #[async_trait]
 pub trait Create {
-    async fn create(&mut self, request: Request, parents: Option<Vec<String>>) -> Response {
+    async fn create(&self, request: Request, parents: Option<Vec<String>>) -> Response {
         http::response::Builder::new()
             .status(StatusCode::METHOD_NOT_ALLOWED)
             .body(Body::empty())

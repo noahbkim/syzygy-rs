@@ -41,6 +41,7 @@ where
     }
 }
 
+#[async_trait]
 impl<T, M, S> List for ResourceList<T, M, S>
 where
     M: crate::helper::manager::Manager<T>,
