@@ -2,8 +2,9 @@ use async_trait::async_trait;
 
 use crate::{Request, Response};
 
-mod method;
-mod component;
+mod actions;
+mod resource;
+mod disallowed;
 
 #[async_trait]
 pub trait CollectionView {
