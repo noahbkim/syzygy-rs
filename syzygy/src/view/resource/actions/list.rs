@@ -10,18 +10,18 @@ use crate::view::resource::method::Method;
 use crate::view::actions::List;
 
 pub struct ResourceList<T, M, S>
-    where
-        M: crate::helper::manager::Manager<T>,
-        S: crate::helper::serializer::Serializer<T = T>,
+where
+    M: crate::helper::manager::Manager<T>,
+    S: crate::helper::serializer::Serializer<T = T>,
 {
     manager: M,
     serializer: S,
 }
 
 impl<T, M, S> Method for ResourceList<T, M, S>
-    where
-        M: crate::helper::manager::Manager<T>,
-        S: crate::helper::serializer::Serializer<T = T>,
+where
+    M: crate::helper::manager::Manager<T>,
+    S: crate::helper::serializer::Serializer<T = T>,
 {
     fn allowed(&self) -> bool {
         return true;

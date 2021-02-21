@@ -5,6 +5,7 @@ use crate::{Request, Response};
 mod actions;
 mod resource;
 mod disallowed;
+mod parameters;
 
 #[async_trait]
 pub trait CollectionView {
