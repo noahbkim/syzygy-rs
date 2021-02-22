@@ -6,9 +6,8 @@ pub use list::List;
 pub use retrieve::Retrieve;
 pub use update::Update;
 
-use crate::{Request, Response};
 use crate::view::{CollectionView, ItemView};
-pub use crate::view::resource::method::Method;
+use crate::{Request, Response};
 
 pub mod create;
 pub mod delete;
@@ -34,12 +33,15 @@ pub trait ItemActions {
 }
 
 #[async_trait]
-impl<T> CollectionView for T where T: CollectionActions + Send + Sync {
+impl<T> CollectionView for T
+where
+    T: CollectionActions + Send + Sync,
+{
     async fn view(&self, request: Request, parents: Option<Vec<String>>) -> Response {
         match request.method() {
             &hyper::Method::GET => self.list(request, parents).await,
             &hyper::Method::POST => self.create(request, parents).await,
-            _ => Response::new(hyper::Body::from("invalid method"))
+            _ => Response::new(hyper::Body::from("invalid method")),
         }
     }
 
@@ -49,14 +51,16 @@ impl<T> CollectionView for T where T: CollectionActions + Send + Sync {
 }
 
 #[async_trait]
-impl<T> ItemView for T where T: ItemActions + Send + Sync {
+impl<T> ItemView for T
+where
+    T: ItemActions + Send + Sync,
+{
     async fn view(&self, request: Request, id: String, parents: Option<Vec<String>>) -> Response {
         match request.method() {
             &hyper::Method::GET => self.retrieve(request, id, parents).await,
-            &hyper::Method::PATCH |
-            &hyper::Method::PUT => self.update(request, id, parents).await,
+            &hyper::Method::PATCH | &hyper::Method::PUT => self.update(request, id, parents).await,
             &hyper::Method::DELETE => self.delete(request, id, parents).await,
-            _ => Response::new(hyper::Body::from("invalid method"))
+            _ => Response::new(hyper::Body::from("invalid method")),
         }
     }
 

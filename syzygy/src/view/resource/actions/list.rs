@@ -1,27 +1,38 @@
 use async_trait::async_trait;
-use hyper::{Body};
+use hyper::Body;
 
 use jsonapi::document::{DataDocument, ResourceData};
 use jsonapi::resource::Resource;
 
-use crate::helper::manager::Queryset;
-use crate::view::{Request, Response};
-use crate::view::resource::method::Method;
+use crate::view::resource::peripheral::manager::Queryset;
 use crate::view::actions::List;
+use crate::view::resource::method::Method;
+use crate::view::{Request, Response};
+use std::sync::Arc;
 
 pub struct ResourceList<T, M, S>
 where
-    M: crate::helper::manager::Manager<T>,
-    S: crate::helper::serializer::Serializer<T = T>,
+    M: crate::view::resource::peripheral::manager::Manager<T>,
+    S: crate::view::resource::peripheral::serializer::Serializer<T = T>,
 {
     manager: M,
     serializer: S,
 }
 
+impl<T, M, S> ResourceList<T, M, S>
+where
+    M: crate::view::resource::peripheral::manager::Manager<T>,
+    S: crate::view::resource::peripheral::serializer::Serializer<T = T>,
+{
+    pub fn new(manager: M, serializer: S) -> Self {
+        Self { manager, serializer }
+    }
+}
+
 impl<T, M, S> Method for ResourceList<T, M, S>
 where
-    M: crate::helper::manager::Manager<T>,
-    S: crate::helper::serializer::Serializer<T = T>,
+    M: crate::view::resource::peripheral::manager::Manager<T>,
+    S: crate::view::resource::peripheral::serializer::Serializer<T = T>,
 {
     fn allowed(&self) -> bool {
         return true;
@@ -30,9 +41,9 @@ where
 
 #[async_trait]
 impl<T, M, S> List for ResourceList<T, M, S>
-    where
-        M: crate::helper::manager::Manager<T>,
-        S: crate::helper::serializer::Serializer<T = T>,
+where
+    M: crate::view::resource::peripheral::manager::Manager<T>,
+    S: crate::view::resource::peripheral::serializer::Serializer<T = T>,
 {
     async fn list(&self, request: Request, parents: Option<Vec<String>>) -> Response {
         let mut data: Vec<Resource> = Vec::new();

@@ -2,10 +2,10 @@ use async_trait::async_trait;
 
 use crate::{Request, Response};
 
-mod actions;
-mod resource;
-mod disallowed;
 mod parameters;
+pub mod actions;
+pub mod disallowed;
+pub mod resource;
 
 #[async_trait]
 pub trait CollectionView {
@@ -20,5 +20,5 @@ pub trait ItemView {
 }
 
 // TODO: trait alias once stabilized
-pub trait View: CollectionView + ItemView {}
-impl<T> View for T where T: CollectionView + ItemView {}
+pub trait View: CollectionView + ItemView + Send + Sync {}
+impl<T> View for T where T: CollectionView + ItemView + Send + Sync {}

@@ -1,6 +1,10 @@
 use jsonapi::resource::{Attributes, Resource};
-use jsonapi::types::{JsonApiValue};
-use syzygy::view::{deserializer, manager, serializer, Endpoint};
+use jsonapi::types::JsonApiValue;
+use syzygy::view::disallowed::Disallowed;
+use syzygy::view::resource;
+use syzygy::view::resource::actions::ResourceList;
+use syzygy::view::resource::peripheral::{manager, serializer};
+use syzygy::view::resource::ResourceView;
 
 const USERS: &str = "users";
 
@@ -34,48 +38,48 @@ impl serializer::Serializer for UserSerializer {
         return Ok(serializer::Output::data(resource));
     }
 }
-
-#[derive(Default)]
-pub struct UserDeserializer;
-
-impl deserializer::Deserializer for UserDeserializer {
-    type T = User;
-
-    fn deserialize(&self, input: deserializer::Input) -> Result<User, deserializer::Error> {
-        let attributes: Attributes = input.data.attributes.ok_or(deserializer::Error {})?;
-        Ok(User {
-            id: attributes
-                .get("id")
-                .ok_or(deserializer::Error {})?
-                .as_u64()
-                .ok_or(deserializer::Error {})?,
-            first_name: attributes
-                .get("first_name")
-                .ok_or(deserializer::Error {})?
-                .as_str()
-                .ok_or(deserializer::Error {})?
-                .into(),
-            last_name: attributes
-                .get("last_name")
-                .ok_or(deserializer::Error {})?
-                .as_str()
-                .ok_or(deserializer::Error {})?
-                .into(),
-            email: attributes
-                .get("email")
-                .ok_or(deserializer::Error {})?
-                .as_str()
-                .ok_or(deserializer::Error {})?
-                .into(),
-            password: attributes
-                .get("password")
-                .ok_or(deserializer::Error {})?
-                .as_str()
-                .ok_or(deserializer::Error {})?
-                .into(),
-        })
-    }
-}
+//
+// #[derive(Default)]
+// pub struct UserDeserializer;
+//
+// impl deserializer::Deserializer for UserDeserializer {
+//     type T = User;
+//
+//     fn deserialize(&self, input: deserializer::Input) -> Result<User, deserializer::Error> {
+//         let attributes: Attributes = input.data.attributes.ok_or(deserializer::Error {})?;
+//         Ok(User {
+//             id: attributes
+//                 .get("id")
+//                 .ok_or(deserializer::Error {})?
+//                 .as_u64()
+//                 .ok_or(deserializer::Error {})?,
+//             first_name: attributes
+//                 .get("first_name")
+//                 .ok_or(deserializer::Error {})?
+//                 .as_str()
+//                 .ok_or(deserializer::Error {})?
+//                 .into(),
+//             last_name: attributes
+//                 .get("last_name")
+//                 .ok_or(deserializer::Error {})?
+//                 .as_str()
+//                 .ok_or(deserializer::Error {})?
+//                 .into(),
+//             email: attributes
+//                 .get("email")
+//                 .ok_or(deserializer::Error {})?
+//                 .as_str()
+//                 .ok_or(deserializer::Error {})?
+//                 .into(),
+//             password: attributes
+//                 .get("password")
+//                 .ok_or(deserializer::Error {})?
+//                 .as_str()
+//                 .ok_or(deserializer::Error {})?
+//                 .into(),
+//         })
+//     }
+// }
 
 pub struct UserQueryset {
     data: Vec<User>,
@@ -150,4 +154,5 @@ impl manager::Manager<User> for UserManager {
     }
 }
 
-pub type UserEndpoint = Endpoint<User, UserManager, UserSerializer>;
+pub type UserList = ResourceList<User, UserManager, UserSerializer>;
+pub type UserView = ResourceView<Disallowed, UserList, Disallowed, Disallowed, Disallowed>;

@@ -1,4 +1,4 @@
-use crate::view::{View, ItemView, CollectionView};
+use crate::view::{CollectionView, ItemView, View};
 use crate::{Request, Response};
 use hyper::StatusCode;
 
@@ -16,7 +16,7 @@ impl Route<'_> {
             Route::None => hyper::http::response::Builder::new()
                 .status(StatusCode::NOT_FOUND)
                 .body(hyper::Body::empty())
-                .unwrap()
+                .unwrap(),
         }
     }
 }

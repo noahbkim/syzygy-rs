@@ -2,17 +2,21 @@ use std::convert::Infallible;
 
 mod user;
 
-use hyper::service::{make_service_fn, service_fn, Service};
-use hyper::{Body, Request, Response, Error, Method};
-use hyper::server::Server;
-use std::sync::Arc;
-use syzygy::router::{Router, Cursor};
-use std::task::{Context, Poll};
-use std::pin::Pin;
+use crate::user::{UserList, UserManager, UserSerializer};
 use futures_util::{future, TryFutureExt};
-use tokio::main;
-use syzygy::router::route::Route;
+use hyper::server::Server;
+use hyper::service::{make_service_fn, service_fn, Service};
+use hyper::{Body, Error, Method, Request, Response};
 use std::future::Future;
+use std::pin::Pin;
+use std::sync::Arc;
+use std::task::{Context, Poll};
+use syzygy::router::route::Route;
+use syzygy::router::{Cursor, Router};
+use syzygy::view::disallowed::Disallowed;
+use syzygy::view::resource::actions::ResourceList;
+use syzygy::view::resource::method;
+use tokio::main;
 
 struct Handler {
     router: Arc<Router>,
@@ -31,7 +35,7 @@ impl Service<Request<Body>> for Handler {
         let router = self.router.clone();
         Box::pin(async move {
             let route = router.get(Cursor::new(&req));
-
+            Ok(route.view(req).await)
         })
     }
 }
@@ -50,16 +54,30 @@ impl<T> Service<T> for Dispatcher {
     }
 
     fn call(&mut self, _: T) -> Self::Future {
-        future::ok(Handler { router: self.router.clone() })
+        future::ok(Handler {
+            router: self.router.clone(),
+        })
     }
 }
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut router = Router::empty();
-    router.nest("users".into(), Router::view(user::UserEndpoint::new()));
 
-    let dispatcher = Dispatcher { router: Arc::new(router) };
+    router.nest(
+        "users".into(),
+        Router::view(user::UserView::new(
+            Disallowed,
+            UserList::new(UserManager::default(), UserSerializer::default()),
+            Disallowed,
+            Disallowed,
+            Disallowed,
+        )),
+    );
+
+    let dispatcher = Dispatcher {
+        router: Arc::new(router),
+    };
     let address = ([127, 0, 0, 1], 3000).into();
     let server = Server::bind(&address).serve(dispatcher);
 
