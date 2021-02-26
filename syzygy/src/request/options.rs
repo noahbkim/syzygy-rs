@@ -1,9 +1,7 @@
-use crate::Request;
 use hyper::Uri;
-use std::borrow::BorrowMut;
 use std::collections::HashMap;
 
-pub struct Parameters {
+pub struct Options {
     include: Option<Vec<String>>,
     fields: Option<HashMap<String, Vec<String>>>,
     sort: Option<Vec<String>>,
@@ -12,7 +10,7 @@ pub struct Parameters {
     extra: Option<HashMap<String, String>>,
 }
 
-impl Parameters {
+impl Options {
     pub fn parse(uri: &Uri) -> Option<Self> {
         let mut result = Self::new();
         let url = url::Url::parse(uri.path_and_query()?.as_str()).ok()?;
@@ -114,7 +112,7 @@ impl Parameters {
     fn check_brackets(key: &str) -> Option<(&str, &str)> {
         let start = key.find('[')?;
         let end = key.find(']')?;
-        return Some((&key[..start], &key[start + 1..end]));
+        Some((&key[..start], &key[start + 1..end]))
     }
 
     fn new() -> Self {

@@ -1,10 +1,10 @@
 use jsonapi::resource::{Attributes, Resource};
 use jsonapi::types::JsonApiValue;
-use syzygy::view::disallowed::Disallowed;
-use syzygy::view::resource;
-use syzygy::view::resource::actions::ResourceList;
-use syzygy::view::resource::peripheral::{manager, serializer};
-use syzygy::view::resource::ResourceView;
+use syzygy::server::view::disallowed::Disallowed;
+use syzygy::server::view::resource;
+use syzygy::server::view::resource::actions::ResourceList;
+use syzygy::server::view::resource::peripheral::{manager, serializer};
+use syzygy::server::view::resource::ResourceView;
 
 const USERS: &str = "users";
 

@@ -11,11 +11,11 @@ use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
-use syzygy::router::route::Route;
-use syzygy::router::{Cursor, Router};
-use syzygy::view::disallowed::Disallowed;
-use syzygy::view::resource::actions::ResourceList;
-use syzygy::view::resource::method;
+use syzygy::server::router::route::Route;
+use syzygy::server::router::{Cursor, Router};
+use syzygy::server::view::disallowed::Disallowed;
+use syzygy::server::view::resource::actions::ResourceList;
+use syzygy::server::view::resource::method;
 use tokio::main;
 
 struct Handler {

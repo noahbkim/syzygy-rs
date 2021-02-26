@@ -1,20 +1,8 @@
-extern crate async_trait;
-extern crate hyper;
-extern crate jsonapi;
-
-pub mod helper;
-pub mod middleware;
-pub mod router;
-pub mod types;
+pub mod request;
+pub mod response;
+pub mod server;
 pub mod view;
 
-pub type Request = hyper::Request<hyper::Body>;
-pub type Response = hyper::Response<hyper::Body>;
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
+pub use request::Request;
+pub use response::Response;
+pub use view::View;
