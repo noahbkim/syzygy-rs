@@ -1,16 +1,12 @@
 pub mod simple;
 
-use std::any::Any;
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 use std::future::Future;
-use std::marker::PhantomData;
 use std::pin::Pin;
-use std::sync::Arc;
 
-use crate::view::ViewResult;
-use crate::{Request, View};
+use crate::view::{ViewResult, ViewFuture};
+use crate::Request;
 
-pub type ViewFuture = Pin<Box<dyn Future<Output = ViewResult> + Send>>;
 pub type Route = dyn FnOnce(Request) -> ViewFuture + Send;
 
 pub struct Path<'a> {
@@ -18,17 +14,24 @@ pub struct Path<'a> {
 }
 
 impl<'a> Path<'a> {
-    pub fn split(string: &'a String) -> Self {
+    pub fn split(string: &'a str) -> Self {
         Self {
             components: {
                 let mut result = VecDeque::new();
                 for part in string.trim_matches('/').split('/') {
-                    result.push_back(part.into());
+                    result.push_back(part);
                 }
                 result
             }
         }
     }
+}
+
+pub trait Router<S>: Send + Sync
+    where
+        S: Send + Sync + 'static
+{
+    fn prepare(&self, state: Box<S>) -> Box<Route>;
 }
 
 pub trait Root: Send + Sync {
@@ -40,13 +43,6 @@ where
     S: Send + Sync + 'static
 {
     fn route(&self, path: Path, state: Box<S>) -> Option<Box<Route>>;
-}
-
-pub fn wrap<S>(view: Arc<dyn View<S>>, state: Box<S>) -> Box<Route>
-where
-    S: Send + Sync + 'static,
-{
-    Box::new(move |request: Request| view.handle(request, state))
 }
 
 

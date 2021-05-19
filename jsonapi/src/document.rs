@@ -1,4 +1,5 @@
 use crate::resource::{Links, Meta, Resource};
+use crate::document::Document::Data;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 pub struct ErrorSource {
@@ -29,7 +30,6 @@ pub struct Error {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(untagged)]
 pub enum ResourceData {
-    None,
     One(Resource),
     Many(Vec<Resource>),
 }
@@ -59,10 +59,26 @@ pub struct ErrorDocument {
     pub jsonapi: Option<Info>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+impl ErrorDocument {
+    fn new(errors: Vec<Error>) -> Self {
+        Self {
+            errors,
+            links: None,
+            meta: None,
+            jsonapi: None,
+        }
+    }
+}
+
+impl Into<Document> for ErrorDocument {
+    fn into(self) -> Document {
+        Document::Error(self)
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct DataDocument {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub data: Option<ResourceData>,
+    pub data: ResourceData,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub included: Option<Vec<Resource>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -73,6 +89,24 @@ pub struct DataDocument {
     pub jsonapi: Option<Info>,
 }
 
+impl DataDocument {
+    fn new(data: ResourceData) -> Self {
+        Self {
+            data,
+            included: None,
+            links: None,
+            meta: None,
+            jsonapi: None,
+        }
+    }
+}
+
+impl Into<Document> for DataDocument {
+    fn into(self) -> Document {
+        Document::Data(self)
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(untagged)]
 pub enum Document {
@@ -81,7 +115,6 @@ pub enum Document {
 }
 
 impl Document {
-    pub fn new() -> Self {
-        Document::Data(Default::default())
-    }
+    pub fn data(data: ResourceData) -> DataDocument { DataDocument::new(data) }
+    pub fn error(errors: Vec<Error>) -> ErrorDocument { ErrorDocument::new(errors) }
 }

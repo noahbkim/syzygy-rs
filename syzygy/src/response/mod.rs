@@ -6,31 +6,17 @@ use std::collections::HashMap;
 pub use reaction::Reaction;
 
 pub struct Response {
-    reaction: Reaction,
-    meta: Option<HashMap<String, String>>,
-    body: Option<Document>,
+    pub reaction: Reaction,
+    pub meta: Option<HashMap<String, String>>,
+    pub body: Document,
 }
 
 impl Response {
-    pub fn new(reaction: Reaction) -> Self {
+    pub fn new(reaction: Reaction, document: Document) -> Self {
         Self {
             reaction,
             meta: None,
-            body: None,
+            body: document,
         }
-    }
-
-    pub fn meta(mut self, meta: HashMap<String, String>) -> Self {
-        self.meta = Some(meta);
-        self
-    }
-
-    pub fn body(mut self, body: Document) -> Self {
-        self.body = Some(body);
-        self
-    }
-
-    pub fn not_found() -> Self {
-        Self::new(Reaction::NotFound)
     }
 }

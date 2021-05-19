@@ -10,4 +10,3 @@ pub mod view;
 pub use error::Error;
 pub use request::Request;
 pub use response::Response;
-pub use view::View;

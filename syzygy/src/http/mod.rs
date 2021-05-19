@@ -3,7 +3,6 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 
-use crate::error::{Error, RouterError};
 use crate::request::Action;
 use crate::response::Reaction;
 use crate::{Request, Response, router};
@@ -11,6 +10,14 @@ use crate::router::Path;
 
 pub struct Handler {
     router: Arc<dyn router::Root>,
+}
+
+fn render(response: Response) -> hyper::Response<hyper::Body> {
+    let builder = hyper::Response::builder();
+    // builder = builder.header();
+
+    let serialized = serde_json::to_string(&response.body).unwrap();
+    builder.body(hyper::Body::from(serialized)).unwrap()
 }
 
 impl hyper::service::Service<hyper::Request<hyper::Body>> for Handler {
@@ -29,7 +36,7 @@ impl hyper::service::Service<hyper::Request<hyper::Body>> for Handler {
             let wrapped = crate::Request::new(path_string, Action::Create);
             Box::pin(async move {
                 let response = route(wrapped).await;
-                Ok(Self::Response::new(hyper::Body::from("Hello World")))
+                Ok(render(response))
             })
         } else {
             panic!();
@@ -44,7 +51,7 @@ pub struct Dispatcher {
 
 impl Dispatcher {
     pub fn new<R: router::Root + 'static>(root: R) -> Self {
-        return Self { router: Arc::new(root) }
+        Self { router: Arc::new(root) }
     }
 }
 
