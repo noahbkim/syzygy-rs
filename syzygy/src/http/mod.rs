@@ -4,8 +4,7 @@ use std::sync::Arc;
 use std::task::{Context, Poll};
 
 use crate::request::Action;
-use crate::response::Reaction;
-use crate::{Request, Response, router};
+use crate::{Response, router};
 use crate::router::Path;
 
 pub struct Handler {
@@ -30,17 +29,16 @@ impl hyper::service::Service<hyper::Request<hyper::Body>> for Handler {
     }
 
     fn call(&mut self, request: hyper::Request<hyper::Body>) -> Self::Future {
-        let path_string = request.uri().path().to_string();
-        let path = Path::split(&path_string);
+        let wrapped = crate::Request::new(request.uri().path().to_string(), Action::Create);
+        let path = Path::split(&wrapped.path);
         if let Some(route) = self.router.route(path) {
-            let wrapped = crate::Request::new(path_string, Action::Create);
             Box::pin(async move {
                 let response = route(wrapped).await;
                 Ok(render(response))
             })
         } else {
-            panic!();
-            // Box::pin(ready(Err(Box::new(RouterError {}) as Box<dyn Error>)))
+            let result = Ok(render(self.router.lost(wrapped)));
+            Box::pin(ready(result))
         }
     }
 }

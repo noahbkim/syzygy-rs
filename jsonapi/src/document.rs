@@ -1,5 +1,4 @@
 use crate::resource::{Links, Meta, Resource};
-use crate::document::Document::Data;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
 pub struct ErrorSource {

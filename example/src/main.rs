@@ -1,27 +1,24 @@
-use std::sync::Arc;
-
-use hyper::server::Server;
-use syzygy::router::simple::{SimpleRouter};
-use syzygy::http::{Dispatcher};
-use syzygy::{Request, Response};
-use syzygy::view::ViewResult;
-use syzygy::response::Reaction;
-use tokio::main;
 use async_trait::async_trait;
-use jsonapi::document::{Document, DataDocument, ResourceData};
+use hyper::server::Server;
+use jsonapi::document::{Document, ResourceData};
 use jsonapi::resource::Resource;
+use syzygy::http::Dispatcher;
+use syzygy::response::Reaction;
+use syzygy::view::ViewResult;
+use syzygy::{Request, Response};
 
 struct TestView {}
 
 #[async_trait]
 impl syzygy::view::SimpleView<()> for TestView {
-    async fn handle(self: Arc<Self>, request: Request, state: Box<()>) -> ViewResult {
+    async fn handle(&self, request: Request, state: Box<()>) -> ViewResult {
         Response::new(
             Reaction::Accepted,
             Document::data(ResourceData::One(Resource::new(
                 "1".into(),
-                "resources".into()
-            ))).into()
+                "resources".into(),
+            )))
+            .into(),
         )
     }
 }

@@ -1,11 +1,9 @@
 pub mod simple;
 
 use std::collections::VecDeque;
-use std::future::Future;
-use std::pin::Pin;
 
-use crate::view::{ViewResult, ViewFuture};
-use crate::Request;
+use crate::view::{ViewFuture};
+use crate::{Request, Response};
 
 pub type Route = dyn FnOnce(Request) -> ViewFuture + Send;
 
@@ -36,6 +34,7 @@ pub trait Router<S>: Send + Sync
 
 pub trait Root: Send + Sync {
     fn route(&self, path: Path) -> Option<Box<Route>>;
+    fn lost(&self, request: Request) -> Response;
 }
 
 pub trait Node<S>: Send + Sync
