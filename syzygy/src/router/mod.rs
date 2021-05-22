@@ -4,6 +4,7 @@ use std::collections::VecDeque;
 
 use crate::view::{ViewFuture};
 use crate::{Request, Response};
+use std::sync::Arc;
 
 pub type Route = dyn FnOnce(Request) -> ViewFuture + Send;
 
